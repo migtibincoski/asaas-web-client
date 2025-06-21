@@ -35,8 +35,8 @@ jobs:
           find ./build -type f \( -name '*.js' -o -name '*.css' -o -name '*.html' \) -exec sh -c '
             for f; do
               case "$f" in
-                *.js) npx terser "$f" -o "$f" --compress --mangle ;;
-                *.css) npx cleancss -o "$f" "$f" ;;
+                *.js) npx terser "$f" -o "$f" --compress --comments false ;;
+                *.css) npx cleancss --level 2 --format keep-breaks=false -o "$f" "$f" ;;
                 *.html) npx html-minifier-terser "$f" -o "$f" --collapse-whitespace --remove-comments --minify-js --minify-css ;;
               esac
             done
@@ -47,7 +47,7 @@ jobs:
           git config --global user.name $user_name
           git config --global user.email $user_email
           git remote set-url origin https://${github_token}@github.com/${repository}
-          npm run deploy
+          yarn deploy
         env:
           user_name: "github-actions[bot]"
           user_email: "github-actions[bot]@users.noreply.github.com"
