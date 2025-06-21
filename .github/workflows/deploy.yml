@@ -1,0 +1,55 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
+
+      - name: Build project
+        run: yarn build
+
+      - name: Minify output
+        run: |
+          find ./build -type f \( -name '*.js' -o -name '*.css' -o -name '*.html' \) -exec sh -c '
+            for f; do
+              case "$f" in
+                *.js) npx terser "$f" -o "$f" --compress --mangle ;;
+                *.css) npx cleancss -o "$f" "$f" ;;
+                *.html) npx html-minifier-terser "$f" -o "$f" --collapse-whitespace --remove-comments --minify-js --minify-css ;;
+              esac
+            done
+          ' sh {} +
+
+      - name: Deploy
+        run: |
+          git config --global user.name $user_name
+          git config --global user.email $user_email
+          git remote set-url origin https://${github_token}@github.com/${repository}
+          npm run deploy
+        env:
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"
+          github_token: ${{ secrets.ACTIONS_DEPLOY_ACCESS_TOKEN }}
+          repository: ${{ github.repository }}
