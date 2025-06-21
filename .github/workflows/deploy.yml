@@ -35,9 +35,9 @@ jobs:
           find ./build -type f \( -name '*.js' -o -name '*.css' -o -name '*.html' \) -exec sh -c '
             for f; do
               case "$f" in
-                *.js) terser "$f" -o "$f" --compress --mangle ;;
-                *.css) cleancss -o "$f" "$f" ;;
-                *.html) html-minifier-terser "$f" -o "$f" --collapse-whitespace --remove-comments --minify-js --minify-css ;;
+                *.js) npx terser "$f" -o "$f" --compress --mangle ;;
+                *.css) npx cleancss -o "$f" "$f" ;;
+                *.html) npx html-minifier-terser "$f" -o "$f" --collapse-whitespace --remove-comments --minify-js --minify-css ;;
               esac
             done
           ' sh {} +
